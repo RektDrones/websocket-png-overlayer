@@ -1,0 +1,7 @@
+websocketpngoverlayer:
+    build: .
+    ports:
+        - "5000:5000"
+    #volumes:
+        #- ./layers:/app/static/layers/:ro
+    restart: always

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title></title>
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            var namespace = '/';
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            socket.on('connect', function() {
+                console.log("connected");
+                socket.emit('connected_from_js', {data: 'index connected'});
+            });
+
+            socket.on('set_visibility', function(msg) {
+                var el = document.getElementById("layer_" + msg.data.layer)
+                el.style.display = msg.data.state ? "block" : "none";
+            });
+
+            socket.on('disconnect', function() {
+                window.location.reload();
+            });
+        });
+    </script>
+    <style>
+        body {
+            background:black;
+        }
+        img {
+            position:absolute;
+            left:0;
+            right:0;
+            top:0;
+            width:100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="imgbg">
+        <img src="static/background.png" alt="">
+        {% for layer, state in layers.iteritems() %}
+        <img id="layer_{{layer}}" style="{{ 'display:none' if not state }}" src="static/layers/{{layer}}.png" alt="{{layer}}">
+        {% endfor %}
+    </div>
+</body>
+</html>

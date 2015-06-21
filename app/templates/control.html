@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            var namespace = '/';
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            socket.on('connect', function() {
+                console.log("connected");
+                socket.emit('connected_from_js', {data: 'admin connected'});
+            });
+
+            socket.on('set_visibility', function(msg) {
+                $("input[name=" + msg.data.layer + "]").prop('checked', msg.data.state).checkboxradio('refresh');
+            });
+
+            $("input[type=checkbox]").change(function(evt) {
+                var layer = evt.target.name;
+                var state = evt.target.checked;
+                socket.emit('set_visibility', {data: {layer: layer, state:state}} );
+            });
+
+            socket.on('disconnect', function() {
+                window.location.reload();
+            });
+
+        });
+    </script>
+    <style>
+        body {
+            color:white;
+            background:black;
+        }
+        label {
+            width: 75%;
+        }
+    </style>
+</head>
+<body>
+    <div data-role="page" data-theme="b">
+        <div role="main" class="ui-conotent">
+        {% for layer in layers.keys()|sort(case_sensitive=False) %}
+            <label>
+            <input type="checkbox" name="{{layer}}" autocomplete="off"
+                                   {{ 'checked="checked"' if layers[layer] }}>
+                {{layer}}
+            </label>
+        {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
